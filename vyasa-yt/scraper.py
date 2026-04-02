@@ -7,7 +7,7 @@ Uses confirmed selectors: p.trans (translation), p.sans (Sanskrit), div.verse.
 
 Saves each chapter to data/chapters/{parvan_key}_{chapter_num:04d}.json
 Idempotent: skips chapters already saved with status != "error".
-3-second delay between requests.
+3-second delay between requests.  Use --limit N to batch.
 """
 
 import time
@@ -175,7 +175,8 @@ def scrape_chapter(parvan_name: str, parvan_key: str, book_num: int,
 
 def run_scraper(parvan_filter: str | None = None,
                 dry_run: bool = False,
-                resume_errors: bool = False):
+                resume_errors: bool = False,
+                limit: int | None = None):
     """
     Scrape all chapters (or one parvan).
 
@@ -183,6 +184,7 @@ def run_scraper(parvan_filter: str | None = None,
         parvan_filter: If set, only scrape this parvan (by name, e.g. "Adiparvan")
         dry_run: Print URLs without fetching
         resume_errors: Only re-scrape chapters with status="error"
+        limit: Max chapters to scrape in this run (for batching)
     """
     print("=" * 64)
     print("  vyasa-yt · Phase 1 · Scraper")
@@ -217,9 +219,18 @@ def run_scraper(parvan_filter: str | None = None,
             continue
         to_scrape.append((parvan_name, parvan_key, book_num, ch))
 
+    # Apply --limit
+    if limit and limit > 0 and len(to_scrape) > limit:
+        deferred = len(to_scrape) - limit
+        to_scrape = to_scrape[:limit]
+        print(f"\n  --limit {limit} applied. {deferred} chapters deferred to next run.")
+
     print(f"\nTotal chapters: {len(work)}")
     print(f"Already saved:  {skipped}")
     print(f"To scrape:      {len(to_scrape)}")
+    if to_scrape:
+        est = len(to_scrape) * REQUEST_DELAY
+        print(f"Estimated time: {est // 60}m {est % 60}s  ({REQUEST_DELAY}s × {len(to_scrape)} chapters)")
 
     if dry_run:
         print("\n  DRY RUN — printing URLs:\n")
@@ -283,5 +294,8 @@ if __name__ == "__main__":
     parser.add_argument("--parvan", help="Scrape only this parvan")
     parser.add_argument("--dry-run", action="store_true", help="Print URLs without fetching")
     parser.add_argument("--resume", action="store_true", help="Re-scrape error chapters only")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="Max chapters to scrape in this run (for batching)")
     args = parser.parse_args()
-    run_scraper(parvan_filter=args.parvan, dry_run=args.dry_run, resume_errors=args.resume)
+    run_scraper(parvan_filter=args.parvan, dry_run=args.dry_run,
+                resume_errors=args.resume, limit=args.limit)

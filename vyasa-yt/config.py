@@ -56,8 +56,10 @@ TOTAL_CHAPTERS = sum(p[3] for p in PARVANS)  # 1795 on website
 # ── Script generation ──────────────────────────────────────────
 MIN_WORDS_STANDALONE = 250   # below this → combine with adjacent chapter
 MAX_WORDS_SINGLE = 1500      # above this → split into two scripts
+MAX_INPUT_CHARS = 5500       # cap reference text sent to LLM
 
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+# ── HuggingFace Inference API ──────────────────────────────────
+HF_MODEL = "Qwen/Qwen2.5-72B-Instruct"
 
 SYSTEM_PROMPT = (
     "You are a scholar and storyteller presenting the Mahābhārata to a general audience. "
@@ -80,10 +82,13 @@ SYSTEM_PROMPT = (
 
 METADATA_SYSTEM_PROMPT = (
     "You are a YouTube metadata specialist for an educational Mahābhārata channel. "
-    "Given a narration script and chapter info, generate YouTube metadata in JSON format. "
-    "The title should be compelling but dignified. The description should be 3-4 sentences "
-    "summarizing the chapter's events in your own words, followed by a channel tagline. "
-    "Tags should cover relevant characters, themes, and searchable terms."
+    "Given a narration script and chapter info, generate YouTube metadata as a JSON object. "
+    "Return ONLY a valid JSON object with keys: yt_title, yt_description, yt_tags, "
+    "yt_category, playlist. The title should be under 100 characters, compelling but dignified. "
+    "The description should be 3-4 sentences summarizing the chapter's events in your own words, "
+    "followed by the tagline: 'This channel presents the complete Mahābhārata, chapter by chapter.' "
+    "Tags: array of 10-15 relevant searchable terms including character names. "
+    "Return ONLY the JSON object, no other text."
 )
 
 # ── Video assembly ─────────────────────────────────────────────

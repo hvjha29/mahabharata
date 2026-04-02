@@ -1,0 +1,17 @@
+{
+  "script_id": "mausalaparvan_0001",
+  "chapter_ids": [
+    "mausalaparvan_0001",
+    "mausalaparvan_0002"
+  ],
+  "chapters": [
+    1,
+    2
+  ],
+  "combined_label": "Chapters 1–2",
+  "parvan": "Mausalaparvan",
+  "split_part": null,
+  "action": "combine",
+  "generated_at": "2026-03-31T21:51:56.154641+00:00",
+  "model": "Qwen/Qwen2.5-72B-Instruct"
+}
